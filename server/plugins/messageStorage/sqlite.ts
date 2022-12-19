@@ -119,11 +119,13 @@ class SqliteMessageStorage implements SearchableMessageStorage {
 	database!: Database;
 	initDone: Deferred;
 	userName: string;
+	cleanCounter: number;
 
 	constructor(userName: string) {
 		this.userName = userName;
 		this.isEnabled = false;
 		this.initDone = new Deferred();
+		this.cleanCounter = 0;
 	}
 
 	async _enable(connection_string: string) {
@@ -407,6 +409,33 @@ class SqliteMessageStorage implements SearchableMessageStorage {
 			msg.type,
 			JSON.stringify(clonedMsg)
 		);
+
+		if (++this.cleanCounter >= 100) {
+			await this.runClean();
+			this.cleanCounter = 0;
+		}
+	}
+
+	async runClean() {
+		if (Config.values.maxHistory <= 0) {
+			return;
+		}
+
+		const limit = Config.values.maxHistory;
+
+		const rows = await this.serialize_fetchall(
+			"SELECT network, channel, COUNT(*) AS n FROM messages GROUP BY network, channel"
+		);
+		for (const row of rows) {
+			if (row.n <= limit) {
+				continue;
+			}
+
+			await this.serialize_run(
+				"DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE network = ? AND channel = ? ORDER BY time ASC LIMIT ?)",
+				[row.network, row.channel, row.n - limit]
+			);
+		}
 	}
 
 	async deleteChannel(network: Network, channel: Channel) {
