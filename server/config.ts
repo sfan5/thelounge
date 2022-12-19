@@ -98,6 +98,8 @@ export type ConfigType = {
 	prefetchMaxImageSize: number;
 	prefetchMaxSearchSize: number;
 	prefetchTimeout: number;
+	noPrefetchForChannel: RegExp | null;
+	noPrefetchForURL: RegExp | null;
 	fileUpload: FileUpload;
 	transports: string[];
 	leaveMessage: string;

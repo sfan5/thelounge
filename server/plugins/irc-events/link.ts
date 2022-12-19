@@ -26,6 +26,16 @@ export default function (client: Client, chan: Chan, msg: Msg, cleanText: string
 		return;
 	}
 
+	if (chan.type !== "channel") {
+		return;
+	}
+	if (
+		Config.values.noPrefetchForChannel instanceof RegExp &&
+		Config.values.noPrefetchForChannel.exec(chan.name)
+	) {
+		return;
+	}
+
 	msg.previews = findLinksWithSchema(cleanText).reduce((cleanLinks: LinkPreview[], link) => {
 		const url = normalizeURL(link.link);
 
@@ -35,12 +45,19 @@ export default function (client: Client, chan: Chan, msg: Msg, cleanText: string
 		}
 
 		// If there are too many urls in this message, only fetch first X valid links
-		if (cleanLinks.length > 4) {
+		if (cleanLinks.length > 6) {
 			return cleanLinks;
 		}
 
 		// Do not fetch duplicate links twice
 		if (cleanLinks.some((l) => l.link === link.link)) {
+			return cleanLinks;
+		}
+
+		if (
+			Config.values.noPrefetchForURL instanceof RegExp &&
+			Config.values.noPrefetchForURL.exec(url)
+		) {
 			return cleanLinks;
 		}
 
@@ -261,14 +278,11 @@ function parse(msg: Msg, chan: Chan, preview: LinkPreview, res: FetchRequest, cl
 
 			break;
 
-		case "audio/midi":
 		case "audio/mpeg":
 		case "audio/mpeg3":
 		case "audio/ogg":
 		case "audio/wav":
 		case "audio/x-wav":
-		case "audio/x-mid":
-		case "audio/x-midi":
 		case "audio/x-mpeg":
 		case "audio/x-mpeg-3":
 		case "audio/flac":
