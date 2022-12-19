@@ -544,6 +544,14 @@ class Client {
 				return null;
 			}
 
+			if (customHighlightString.startsWith("/") && customHighlightString.endsWith("/")) {
+				try {
+					return new RegExp(customHighlightString.slice(1, -1), "i");
+				} catch (e) {
+					log.error("User-specified regexp invalid", "" + e);
+				}
+			}
+
 			// Ensure we don't have empty strings in the list of highlights
 			const highlightsTokens = customHighlightString
 				.split(",")
