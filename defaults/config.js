@@ -174,6 +174,12 @@ module.exports = {
 	// This value is set to `5000` milliseconds by default.
 	prefetchTimeout: 5000,
 
+	// optional RegExp for channels in which not to perform prefetch
+	noPrefetchForChannel: null,
+
+	// optional RegExp for URLs which not to prefetch
+	noPrefetchForURL: null,
+
 	// ### `fileUpload`
 	//
 	// Allow uploading files to the server hosting The Lounge.
