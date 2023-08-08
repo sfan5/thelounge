@@ -404,7 +404,7 @@ export default defineComponent({
 			if (e.ctrlKey) {
 				transform.value.y += e.deltaY;
 			} else {
-				const delta = e.deltaY > 0 ? 0.1 : -0.1;
+				const delta = e.deltaY < 0 ? 0.1 : -0.1;
 				const newScale = Math.min(3, Math.max(0.1, transform.value.scale + delta));
 				const fixedPosition = calculateZoomShift(
 					newScale,
